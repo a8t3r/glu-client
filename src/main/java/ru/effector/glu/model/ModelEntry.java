@@ -18,9 +18,6 @@ public class ModelEntry {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ModelEntry{");
-        sb.append("mountPoint='").append(mountPoint).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "ModelEntry{" + "mountPoint='" + mountPoint + '\'' + '}';
     }
 }
