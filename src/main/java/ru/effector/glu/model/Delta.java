@@ -9,6 +9,6 @@ import java.util.Map;
 public class Delta {
 
     public String accuracy;
-    public Map<String, ModelEntry> delta;
+    public Map<String, DeltaEntry> delta;
 
 }
