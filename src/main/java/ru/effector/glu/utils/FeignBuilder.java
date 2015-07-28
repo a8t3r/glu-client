@@ -1,4 +1,4 @@
-package ru.effector.glu;
+package ru.effector.glu.utils;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

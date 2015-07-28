@@ -3,7 +3,10 @@ package ru.effector.glu;
 import feign.Feign;
 import feign.Target;
 import ru.effector.glu.interfaces.Agents;
+import ru.effector.glu.interfaces.Executions;
 import ru.effector.glu.interfaces.Models;
+import ru.effector.glu.interfaces.Plans;
+import ru.effector.glu.utils.FeignBuilder;
 
 import java.util.Base64;
 
@@ -22,8 +25,16 @@ public class GluClient {
         this.serverUrl = serverUrl;
     }
 
+    public Executions executions() {
+        return build(Executions.class);
+    }
+
     public Models models() {
         return build(Models.class);
+    }
+
+    public Plans plans() {
+        return build(Plans.class);
     }
 
     public Agents agents() {
