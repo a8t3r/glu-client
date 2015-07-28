@@ -3,6 +3,7 @@ package ru.effector.glu;
 import feign.Feign;
 import feign.Target;
 import ru.effector.glu.interfaces.Agents;
+import ru.effector.glu.interfaces.Models;
 
 /**
  * @author Alexandr Kolosov
@@ -18,6 +19,10 @@ public class GluClient {
         this.username = username;
         this.password = password;
         this.serverUrl = serverUrl;
+    }
+
+    public Models models() {
+        return build(Models.class);
     }
 
     public Agents agents() {

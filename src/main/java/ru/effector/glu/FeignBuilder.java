@@ -1,5 +1,6 @@
 package ru.effector.glu;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import feign.Feign;
@@ -18,8 +19,13 @@ public class FeignBuilder {
 
     public static Feign getFeign(String username, String password) {
         ObjectMapper mapper = new ObjectMapper()
-                .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+                .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+        return getFeign(username, password, mapper);
+    }
+
+    public static Feign getFeign(String username, String password, ObjectMapper mapper) {
         return Feign.builder()
                 .encoder(new JacksonEncoder(mapper))
                 .decoder(new JacksonDecoder(mapper))
