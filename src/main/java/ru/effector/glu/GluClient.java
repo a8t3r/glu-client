@@ -2,10 +2,7 @@ package ru.effector.glu;
 
 import feign.Feign;
 import feign.Target;
-import ru.effector.glu.interfaces.Agents;
-import ru.effector.glu.interfaces.Executions;
-import ru.effector.glu.interfaces.Models;
-import ru.effector.glu.interfaces.Plans;
+import ru.effector.glu.interfaces.*;
 import ru.effector.glu.utils.FeignBuilder;
 
 import java.util.Base64;
@@ -23,6 +20,10 @@ public class GluClient {
         String token = username + ":" + password;
         this.token = "Basic " + Base64.getEncoder().encodeToString(token.getBytes());
         this.serverUrl = serverUrl;
+    }
+
+    public Deployments deployments() {
+        return build(Deployments.class);
     }
 
     public Executions executions() {

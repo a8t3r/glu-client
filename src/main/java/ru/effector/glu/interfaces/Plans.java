@@ -4,9 +4,7 @@ import feign.Response;
 import ru.effector.glu.model.Order;
 import ru.effector.glu.model.PlanAction;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 
 /**
  * @author Alexandr Kolosov
@@ -14,6 +12,13 @@ import javax.ws.rs.QueryParam;
  */
 @Path("/plans")
 public interface Plans {
+
+    @GET
+    Response getPlans();
+
+    @GET
+    @Path("/{plan_id}")
+    Response getPlan(@PathParam("plan_id") String planId);
 
     @POST
     Response putPlan(

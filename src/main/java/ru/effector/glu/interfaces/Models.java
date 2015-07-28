@@ -1,11 +1,13 @@
 package ru.effector.glu.interfaces;
 
+import feign.Response;
 import ru.effector.glu.model.Delta;
 import ru.effector.glu.model.Model;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 
 /**
  * @author Alexandr Kolosov
@@ -16,7 +18,7 @@ public interface Models {
 
     @POST
     @Path("/static")
-    String putStaticModel(Model model);
+    Response putStaticModel(Model model);
 
     @GET
     @Path("/static")
@@ -28,6 +30,6 @@ public interface Models {
 
     @GET
     @Path("/delta")
-    Delta getDelta();
+    Delta getDelta(@QueryParam("errorsOnly") Boolean errorsOnly);
 
 }
