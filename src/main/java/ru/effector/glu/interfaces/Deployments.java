@@ -1,11 +1,10 @@
 package ru.effector.glu.interfaces;
 
 import feign.Response;
+import ru.effector.glu.model.Deployment;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
+import java.util.Map;
 
 /**
  * @author Alexandr Kolosov
@@ -15,15 +14,19 @@ public interface Deployments {
 
     @GET
     @Path("/deployments/current")
-    Response getCurrentDeployments();
+    Map<String, Deployment> getCurrentDeployments();
 
     @GET
     @Path("/deployments/archived")
-    Response getArchivedDeployments();
+    Map<String, Deployment> getArchivedDeployments(
+            @QueryParam("offset") Integer offset,
+            @QueryParam("max") Integer max,
+            @QueryParam("order") String order,
+            @QueryParam("sort") String sort);
 
     @DELETE
     @Path("/deployments/current")
-    Response archiveCurrentDeployments();
+    Map<String, Deployment> archiveCurrentDeployments();
 
     @GET
     @Path("/deployment/current/{deploymentId}")
@@ -35,6 +38,6 @@ public interface Deployments {
 
     @DELETE
     @Path("/deployment/current/{deploymentId}")
-    Response deleteDeployment(@PathParam("deploymentId") String deploymentId);
+    void deleteDeployment(@PathParam("deploymentId") String deploymentId);
 
 }
