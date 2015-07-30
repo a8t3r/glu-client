@@ -20,6 +20,10 @@ public interface Models {
     @Path("/static")
     Response putStaticModel(Model model);
 
+    @POST
+    @Path("/static")
+    Response putStaticModel(String modelId);
+
     @GET
     @Path("/static")
     Model getStaticModel();
