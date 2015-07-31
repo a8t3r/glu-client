@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import feign.Feign;
+import feign.Logger;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
@@ -29,6 +30,7 @@ public class FeignBuilder {
                 .decoder(new JacksonDecoder(mapper))
                 .contract(new JAXRSContract())
                 .logger(new Slf4jLogger())
+                .logLevel(Logger.Level.HEADERS)
                 .requestInterceptor(requestFacade -> {
                     requestFacade.header("Content-Type", "application/json");
                     requestFacade.header("Authorization", token);
