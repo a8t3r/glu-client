@@ -42,7 +42,7 @@ public class DeltaUtils {
             }
         }
 
-        if (!requiredPlans.isEmpty()) {
+        if (!requiredPlans.isEmpty() && !hasActiveDeployments()) {
             staticModel.id = null;
             Response response = models.putStaticModel(staticModel);
             if (response.status() == 201) {
@@ -104,5 +104,14 @@ public class DeltaUtils {
 
     private String agentKey(String agent, String mountPoint) {
         return agent + ":" + mountPoint;
+    }
+
+    private boolean hasActiveDeployments() {
+        Map<String, Deployment> deployments = client.deployments().getCurrentDeployments();
+        return deployments != null && !deployments
+                .values().stream()
+                .filter(d -> (!"COMPLETED".equals(d.status) && !"FAILED".equals(d.status)))
+                .collect(Collectors.toSet())
+                .isEmpty();
     }
 }
