@@ -59,20 +59,22 @@ public class DeltaUtils {
                         requiredPlans.add(deployPlan);
 
                     default:
-                        // TODO:
+                        throw new IllegalStateException("?!");
                 }
             }
         }
 
-        staticModel.id = null;
-        Response response = models.putStaticModel(staticModel);
-        if (response.status() == 201) {
-            String modelId = ResponseUtils.asString(response);
-            response = models.putStaticModel(modelId);
-        }
+        if (!requiredPlans.isEmpty()) {
+            staticModel.id = null;
+            Response response = models.putStaticModel(staticModel);
+            if (response.status() == 201) {
+                String modelId = ResponseUtils.asString(response);
+                response = models.putStaticModel(modelId);
+            }
 
-        if (response.status() / 100 == 2) {
-            performPlans(requiredPlans);
+            if (response.status() / 100 == 2) {
+                performPlans(requiredPlans);
+            }
         }
     }
 
