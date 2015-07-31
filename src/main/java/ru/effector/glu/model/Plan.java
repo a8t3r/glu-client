@@ -8,6 +8,6 @@ public class Plan {
 
     public PlanAction planAction;
     public String systemFilter;
-    public Order order;
+    public Order order = Order.sequential;
 
 }

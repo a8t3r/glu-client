@@ -1,10 +1,12 @@
-package ru.effector.glu.utils;
+package ru.effector.glu.recovery;
 
 import feign.Response;
 import ru.effector.glu.GluClient;
 import ru.effector.glu.interfaces.Executions;
 import ru.effector.glu.interfaces.Models;
 import ru.effector.glu.model.*;
+import ru.effector.glu.utils.ExecutionUtils;
+import ru.effector.glu.utils.ResponseUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,11 +21,11 @@ import java.util.stream.Collectors;
 public class DeltaUtils {
 
     private GluClient client;
-    private String failoverAgent;
+    private RecoveryStrategy strategy;
 
-    public DeltaUtils(GluClient client, String failoverAgent) {
+    public DeltaUtils(GluClient client, RecoveryStrategy strategy) {
         this.client = client;
-        this.failoverAgent = failoverAgent;
+        this.strategy = strategy;
     }
 
     public void repaireModel() {
@@ -48,12 +50,12 @@ public class DeltaUtils {
                     case "NOT deployed":
                         ModelEntry modelEntry = index.get(entry.agent.expectedValue);
                         if (modelEntry != null) {
-                            modelEntry.agent = failoverAgent;
+                            modelEntry.agent = strategy.getRecoveryAgentForEntry(modelEntry);
                         }
 
                         Plan deployPlan = new Plan();
                         deployPlan.planAction = PlanAction.deploy;
-                        deployPlan.systemFilter = "key='" + entry.key.expectedValue;
+                        deployPlan.systemFilter = "key='" + entry.key.expectedValue + "'";
                         requiredPlans.add(deployPlan);
 
                     default:
@@ -62,26 +64,28 @@ public class DeltaUtils {
             }
         }
 
-        if (!hasActiveDeployments()) {
-            staticModel.id = null;
-            Response response = models.putStaticModel(staticModel);
-            if (response.status() == 201) {
-                String modelId = ResponseUtils.asString(response);
-                response = models.putStaticModel(modelId);
-            }
+        staticModel.id = null;
+        Response response = models.putStaticModel(staticModel);
+        if (response.status() == 201) {
+            String modelId = ResponseUtils.asString(response);
+            response = models.putStaticModel(modelId);
+        }
 
-            if (response.status() / 100 == 2) {
-                for (Plan plan : requiredPlans) {
-                    Response planResponse = client.plans().putPlan(plan.planAction, plan.systemFilter, plan.order);
-                    String planId = ResponseUtils.asString(planResponse);
+        if (response.status() / 100 == 2) {
+            performPlans(requiredPlans);
+        }
+    }
 
-                    Executions executions = client.executions();
-                    String executionId = ResponseUtils.asString(executions.putExecution(planId));
+    private void performPlans(List<Plan> requiredPlans) {
+        for (Plan plan : requiredPlans) {
+            Response planResponse = client.plans().putPlan(plan.planAction, plan.systemFilter, plan.order);
+            String planId = ResponseUtils.asString(planResponse);
 
-                    ExecutionUtils executionUtils = new ExecutionUtils(executions);
-                    executionUtils.awaitCompletion(planId, executionId);
-                }
-            }
+            Executions executions = client.executions();
+            String executionId = ResponseUtils.asString(executions.putExecution(planId));
+
+            ExecutionUtils executionUtils = new ExecutionUtils(executions);
+            executionUtils.awaitCompletion(planId, executionId);
         }
     }
 
@@ -91,14 +95,5 @@ public class DeltaUtils {
 
     private String agentKey(String agent, String mountPoint) {
         return agent + ":" + mountPoint;
-    }
-
-    private boolean hasActiveDeployments() {
-        Map<String, Deployment> deployments = client.deployments().getCurrentDeployments();
-        return deployments != null && !deployments
-                .values().stream()
-                .filter(d -> !"COMPLETED".equals(d.status))
-                .collect(Collectors.toSet())
-                .isEmpty();
     }
 }

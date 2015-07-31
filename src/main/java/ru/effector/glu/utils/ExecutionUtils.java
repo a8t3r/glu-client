@@ -26,8 +26,13 @@ public class ExecutionUtils {
     public Response awaitCompletion(String planId, String executionId, int tries) {
         Response response = executions.getExecutionStatus(planId, executionId);
         Collection<String> collection = response.headers().getOrDefault("X-glu-completion", Collections.singleton("100:COMPLETED"));
-        if ("100:COMPLETED".equals(collection.iterator().next()) || tries < 0) {
+        String header = collection.iterator().next();
+        if ("100:COMPLETED".equals(header) || tries < 0) {
             return response;
+        }
+
+        if (header.contains("FAILED")) {
+            throw new IllegalStateException("failed state for execution " + executionId);
         }
 
         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(10));
