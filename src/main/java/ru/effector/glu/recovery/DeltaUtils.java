@@ -36,32 +36,9 @@ public class DeltaUtils {
                 .collect(Collectors.toMap(this::agentKey, Function.identity()));
 
         List<Plan> requiredPlans = new ArrayList<>();
-
         for (DeltaEntry entry : delta.delta.values()) {
             if (entry.entryState.invalid()) {
-                switch (entry.statusInfo) {
-                    case "should NOT be deployed":
-                        Plan undeployPlan = new Plan();
-                        undeployPlan.planAction = PlanAction.undeploy;
-                        undeployPlan.systemFilter = "key='" + entry.key.currentValue + "'";
-
-                        requiredPlans.add(undeployPlan);
-                        break;
-                    case "NOT deployed":
-                        ModelEntry modelEntry = index.get(entry.agent.expectedValue);
-                        if (modelEntry != null) {
-                            modelEntry.agent = strategy.getRecoveryAgentForEntry(modelEntry);
-                        }
-
-                        Plan deployPlan = new Plan();
-                        deployPlan.planAction = PlanAction.deploy;
-                        deployPlan.systemFilter = "key='" + entry.key.expectedValue + "'";
-                        requiredPlans.add(deployPlan);
-                        break;
-
-                    default:
-                        throw new IllegalStateException("?!");
-                }
+                requiredPlans.add(buildPlan(index, entry));
             }
         }
 
@@ -77,6 +54,34 @@ public class DeltaUtils {
                 performPlans(requiredPlans);
             }
         }
+    }
+
+    private Plan buildPlan(Map<String, ModelEntry> index, DeltaEntry entry) {
+        switch (entry.statusInfo) {
+            case "should NOT be deployed":
+                return buildPlan(PlanAction.undeploy, entry.key.currentValue);
+            case "NOT deployed":
+                ModelEntry modelEntry = index.get(entry.agent.expectedValue);
+                if (modelEntry != null) {
+                    modelEntry.agent = strategy.getRecoveryAgentForEntry(modelEntry);
+                }
+
+                return buildPlan(PlanAction.deploy, entry.key.expectedValue);
+
+            default:
+                if ("notExpectedState".equals(entry.status)) {
+                    return buildPlan(PlanAction.redeploy, entry.key.expectedValue);
+                }
+
+                throw new IllegalStateException("?!");
+        }
+    }
+
+    private Plan buildPlan(PlanAction a, String keyValue) {
+        Plan deployPlan = new Plan();
+        deployPlan.planAction = a;
+        deployPlan.systemFilter = "key='" + keyValue + "'";
+        return deployPlan;
     }
 
     private void performPlans(List<Plan> requiredPlans) {
