@@ -57,6 +57,7 @@ public class DeltaUtils {
                         deployPlan.planAction = PlanAction.deploy;
                         deployPlan.systemFilter = "key='" + entry.key.expectedValue + "'";
                         requiredPlans.add(deployPlan);
+                        break;
 
                     default:
                         throw new IllegalStateException("?!");
@@ -82,12 +83,13 @@ public class DeltaUtils {
         for (Plan plan : requiredPlans) {
             Response planResponse = client.plans().putPlan(plan.planAction, plan.systemFilter, plan.order);
             String planId = ResponseUtils.asString(planResponse);
+            if (planId != null && !planId.isEmpty()) {
+                Executions executions = client.executions();
+                String executionId = ResponseUtils.asString(executions.putExecution(planId));
 
-            Executions executions = client.executions();
-            String executionId = ResponseUtils.asString(executions.putExecution(planId));
-
-            ExecutionUtils executionUtils = new ExecutionUtils(executions);
-            executionUtils.awaitCompletion(planId, executionId);
+                ExecutionUtils executionUtils = new ExecutionUtils(executions);
+                executionUtils.awaitCompletion(planId, executionId);
+            }
         }
     }
 
