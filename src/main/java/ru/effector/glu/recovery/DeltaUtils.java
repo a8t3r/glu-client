@@ -28,7 +28,7 @@ public class DeltaUtils {
         this.strategy = strategy;
     }
 
-    public void repaireModel() {
+    public void repairModel() {
         Models models = client.models();
         Delta delta = models.getDelta(true);
         Model staticModel = models.getStaticModel();
